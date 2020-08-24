@@ -36,6 +36,7 @@ const (
 var (
 	re                 = regexp.MustCompile(`^/v2/`)
 	realm              = regexp.MustCompile(`realm="(.*?)"`)
+	service            = regexp.MustCompile(`service="(.*?)"`)
 	ctxKeyOriginalHost = struct{}{}
 )
 
@@ -240,7 +241,9 @@ func updateTokenEndpoint(resp *http.Response, host string) {
 		return
 	}
 	cur := fmt.Sprintf("https://%s/_token", host)
-	resp.Header.Set("www-authenticate", realm.ReplaceAllString(v, fmt.Sprintf(`realm="%s"`, cur)))
+	r := realm.ReplaceAllString(v, fmt.Sprintf(`realm="%s"`, cur))
+	s := service.ReplaceAllString(r, fmt.Sprintf(`service="%s"`, host))
+	resp.Header.Set("www-authenticate", s)
 }
 
 type authenticator interface {
