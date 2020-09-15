@@ -1,17 +1,17 @@
 # Serverless Container Registry Proxy
 
 This project offers a very simple reverse proxy that lets you expose your
-public or private Docker registries (such as Google Container Registry `gcr.io`,
+public or private Docker registries (such as Google Container Registry `europe-docker.pkg.dev`,
 or Docker Hub account) as a public registry on your own domain name.
 
 You can also fork this project and customize as a middleware and deploy to
 [Cloud Run][run] or somewhere else since it’s a generic docker-registry proxy.
 
-[![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.png)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/ahmetb/serverless-registry-proxy)
+[![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.png)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=europe-docker.pkg.dev/cloudrun/button&cloudshell_git_repo=https://github.com/ahmetb/serverless-registry-proxy)
 
 For example, if you have a public registry, and offering images like:
 
-    docker pull gcr.io/ahmetb-public/busybox
+    docker pull europe-docker.pkg.dev/ahmetb-public/busybox
 
 You can use this proxy, and instead offer your images ✨way fancier🎩, like:
 
@@ -49,10 +49,10 @@ ID of the GCR registry you want to expose publicly:
 gcloud beta run deploy \
     --allow-unauthenticated \
     --image "[IMAGE]" \
-    --set-env-vars "REGISTRY_HOST=gcr.io,REPO_PREFIX=[GCP_PROJECT_ID]"
+    --set-env-vars "REGISTRY_HOST=europe-docker.pkg.dev,GCP_PROJECT=[GCP_PROJECT_ID],ARTIFACT_REGISTRY=[ARTIFACT_REGISTRY_ID]"
 ```
 
-> This will deploy a proxy for your `gcr.io/[GCP_PROJECT_ID]` public registry.
+> This will deploy a proxy for your `europe-docker.pkg.dev/[GCP_PROJECT_ID]/[ARTIFACT_REGISTRY_ID]` public registry.
 > If your GCR registry is private, see the section below on "Exposing private
 > registries".
 
@@ -74,22 +74,7 @@ some 15-20 minutes to actually provision TLS certificates for your domain name.
 Kubernetes, obtain a valid TLS certificate for your domain name, and make it
 publicly accessible.
 
-### Using with other Docker Registries
-
-If you set `REGISTRY_HOST` and `REGISTRY_PREFIX` environment variables, you can
-also use this proxy for other docker registries.
-
-For example, to proxy `docker pull ahmet/example` to Docker Hub, specify
-environment variables:
-
-- `REGISTRY_HOST=index.docker.io`
-- `REPO_PREFIX=ahmet`
-
-> **Note:** This is not tested with registries other than Docker Hub and GCR.io.
-> If you can make it work with Azure Container Registry or AWS Elastic Container
-> Registry, contribute examples here.
-
-### Exposing private registries publicly (GCR.io)
+### Exposing private registries publicly (europe-docker.pkg.dev)
 
 > ⚠️ This will make images in your private GCR registries publicly accessible on
 > the internet.
@@ -121,10 +106,11 @@ While deploying, you can set additional environment variables for customization:
 
 | Key | Value |
 |-----|-------|
-| `REGISTRY_HOST` | specify  hostname for target registry, e.g. `gcr.io`. |
-| `DISABLE_BROWSER_REDIRECTS` |  if you set this variable to any value,   visiting `example.com/image` on this browser will not redirect to  `[REGISTRY_HOST]/[REPO_PREFIX]/image` to allow your users to browse the image on GCR. If you're exposing private registries, you might want to set this variable. |
+| `REGISTRY_HOST` | specify  hostname for target registry, e.g. `europe-docker.pkg.dev`. |
+| `GCP_PROJECT` | GCP project
+| `ARTIFACT_REGISTRY` | Artifact registry id
 | `AUTH_HEADER` | The `Authentication: [...]` header’s value to authenticate to the target registry |
-| `GOOGLE_APPLICATION_CREDENTIALS` | (For `gcr.io`) Path to the IAM service account JSON key  file to expose the private GCR registries publicly. |
+| `GOOGLE_APPLICATION_CREDENTIALS` | (For `europe-docker.pkg.dev`) Path to the IAM service account JSON key  file to expose the private GCR registries publicly. |
 
 -----
 
